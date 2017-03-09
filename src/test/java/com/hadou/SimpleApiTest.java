@@ -17,7 +17,7 @@ public class SimpleApiTest {
         BufferedReader reader = null;
         reader= IOUtils.readerFromString("StanfordCoreNLP-chinese.properties");
         props.load(reader);
-        Sentence sent = new Sentence("国务院总理李克强调研上海外高桥时提出，支持上海积极探索新机制。");
+        Sentence sent = new Sentence("国务院总理李克强调研上海外高桥时提出，支持上海积极探索新机制。 ");
         List<String> nerTags = sent.nerTags(props);  // [PERSON, O, O, O, O, O, O, O]
         String firstPOSTag = sent.posTags(props).get(0);   // NNP
         System.out.println(firstPOSTag);
