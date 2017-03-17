@@ -61,7 +61,7 @@ public class PipelineTest {
             System.out.println(tree.toString());
 
             // this is the Stanford dependency graph of the current sentence
-            SemanticGraph dependencies = sentence.get(SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation.class);
+            SemanticGraph dependencies = sentence.get(SemanticGraphCoreAnnotations.BasicDependenciesAnnotation.class);
             System.out.println(dependencies.toString());
         }
 

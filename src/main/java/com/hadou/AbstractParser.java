@@ -28,19 +28,18 @@ public abstract class AbstractParser {
         }
     }
 
-    public Map<String, String> parseContent(String content) {
-        Map<String, String> map = new HashMap<>();
+    public String parseContent(String content) {
         Annotation document = new Annotation(content);
-
+        String result = null;
         // run all Annotators on this text
         pipeline.annotate(document);
         List<CoreMap> sentences = document.get(CoreAnnotations.SentencesAnnotation.class);
-
-        for (CoreMap sentence : sentences) {
-            // this is the parse tree of the current sentence
-            Tree tree = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
-            map.put(sentence.toShorterString("Text"), ConnUtil.getConnStr(sentence));
+        if (sentences != null) {
+            for (CoreMap sentence : sentences) {
+                // this is the parse tree of the current sentence
+                result = ConnUtil.getConnStr(sentence);
+            }
         }
-        return map;
+        return result;
     }
 }

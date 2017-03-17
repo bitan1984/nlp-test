@@ -18,6 +18,7 @@ import java.util.Map;
  */
 public class ParseBlogContent {
     static Logger logger = Logger.getLogger(ParseBlogContent.class);
+    static String pattern = "[.。]|[!?！？\n]+";
 
     public static void main(String[] args) {
         if (args.length < 2) {
@@ -29,38 +30,36 @@ public class ParseBlogContent {
         BufferedReader reader = null;
         PrintWriter writer = null;
         AbstractParser srParser = new SRParser();
-        AbstractParser factoredParser = new FactoredParser();
+        AbstractParser pcfgParser = new PCFGParser();
+        long lineCount = 0L;
         try {
             srParser.init();
-            factoredParser.init();
+            pcfgParser.init();
             reader = IOUtils.readerFromString(input, "utf-8");
             writer = IOUtils.getPrintWriter(output, "utf-8");
             String line = null;
             while ((line = reader.readLine()) != null) {
+                lineCount++;
+                if (lineCount % 100 == 0)
+                    logger.info("已经处理" + lineCount + "行记录");
                 if (StringUtils.isEmpty(line)) {
                     continue;
                 }
-                String[] values = StringUtils.splitPreserveAllTokens(line, "\t");
-                if (values == null || values.length < 2) {
+                line = line.trim();
+                if (line.length() == 0)
                     continue;
+                if (line.length() > 40)
+                    continue;
+                long time1 = System.currentTimeMillis();
+                String result1 = srParser.parseContent(line);
+                long time2 = System.currentTimeMillis();
+                String result2 = pcfgParser.parseContent(line);
+                long time3 = System.currentTimeMillis();
+//                    System.out.println((time2 - time1) + " vs " + (time3 - time2));
+                if (result1 != null && result1.equals(result2)) {
+                    writer.println(result1);
+                    writer.println();
                 }
-                JsonReader jsonReader = Json.createReader(new StringReader(values[1]));
-                JsonObject jsonObject = jsonReader.readObject();
-                String content = jsonObject.getString("Content");
-                Map<String, String> result1 = srParser.parseContent(content);
-                Map<String, String> result2 = factoredParser.parseContent(content);
-                for (Map.Entry<String, String> stringStringEntry : result1.entrySet()) {
-                    String text = stringStringEntry.getKey();
-                    String parseTree = stringStringEntry.getValue();
-                    if (parseTree.startsWith("(X")) {
-                        continue;
-                    }
-                    String otherParseTree = result2.get(text);
-                    if (otherParseTree != null && otherParseTree.equals(parseTree)) {
-                        writer.println(text + "\t" + parseTree);
-                    }
-                }
-                jsonReader.close();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -68,7 +67,8 @@ public class ParseBlogContent {
             IOUtils.closeIgnoringExceptions(reader);
             IOUtils.closeIgnoringExceptions(writer);
             srParser.close();
-            factoredParser.close();
+            pcfgParser.close();
         }
     }
+
 }
